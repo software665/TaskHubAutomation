@@ -41,6 +41,8 @@ export class LoginPage {
         }
         await this.signinButton();
 
+        await expect(this.page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+
 
     }
 

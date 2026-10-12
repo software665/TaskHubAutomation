@@ -1,0 +1,16 @@
+{
+    "createTask":{
+"title":"Concurrent work to Wall paint",
+    "assignee":"Ascent User2",
+    "priority":"High",
+    "dueDate":false,
+    "moreOption":false
+    },
+    "assertTask":{
+        "title":"Concurrent work to Wall paint",
+        "assignee":"Ascent User2",
+        "status":"Open"  
+    }
+    
+
+}
