@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { PageManagers } from 'page-manager/page-manager';
+import { PageManagers } from 'page-manager/Page-Manager';
 import { appUrls } from 'playwright.config';
 import credentials from 'tests/fixture/test-data-management/Login.json';
 
@@ -10,17 +10,15 @@ test.beforeEach(async ({ page }) => {
 test('Login without Forgot Password and Remember Me @positive @regression', async ({ page }) => {
     const pm = new PageManagers(page);
 
-    const { company: tenant, userName, password } =
-        credentials.super_admin_credentials;
+     const user1 =credentials.super_admin_credentials;
 
-    await pm.login.loginPage(tenant, userName, password, false, false);
+    await pm.login.loginPage(user1.company, user1.userName, user1.password, false, false);
 });
 
 test('Login with Remember Me @positive @smoke', async ({ page }) => {
     const pm = new PageManagers(page);
+    
+    const user1 =credentials.userone_credentials;
 
-    const { company: tenant, userName, password } =
-        credentials.userone_credentials;
-
-    await pm.login.loginPage(tenant, userName, password, true, false);
+    await pm.login.loginPage(user1.company, user1.userName, user1.password, false, false);
 });

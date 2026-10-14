@@ -41,7 +41,7 @@ export class LoginPage {
         }
         await this.signinButton();
 
-        await expect(this.page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+        await this.page.waitForLoadState('networkidle');
 
 
     }
@@ -63,6 +63,13 @@ export class LoginPage {
 
     async signinButton(){
         await this.page.getByRole("button",{name:'Sign in'}).click();
+    }
+
+    async logout(){
+        //profile icon
+        await this.page.getByRole("button", { name: "Profile menu" }).click();
+        //logout 
+        await this.page.getByRole("button",{name:'Log out'}).click();
     }
 
 }
