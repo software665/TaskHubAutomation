@@ -41,15 +41,25 @@ export class CreateTask {
     }
     // Create Task
     await this.createTaskButton();
+    //waitfor
+    await this.page.locator("div[class*='flex-wrap']").first().waitFor();
   }
 
   //task ID
- async getTaskID(): Promise<string> {
-  const taskIdLocator = this.page.getByText(/^TSK-\d{4}-\d+$/, { exact: true });
-  await taskIdLocator.first().waitFor({ state: "visible" });
-  return (await taskIdLocator.first().innerText()).trim();
+  async getTaskID(): Promise<string> {
+    const taskIdLocator = this.page
+      .locator(
+        'span.inline-flex:has(svg path[d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"])',
+      )
+      .filter({ hasText: /^TSK-\d{4}-\d+$/ });
 
-}
+    await taskIdLocator.last().waitFor({ state: "visible" });
+
+    const taskID = (await taskIdLocator.last().innerText()).trim();
+
+    console.log("Task ID -", taskID);
+    return taskID;
+  }
 
   async addTaskButton() {
     await this.page
@@ -76,6 +86,7 @@ export class CreateTask {
       .getByRole("button", { name: "Create Task", exact: true })
       .last()
       .click();
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -131,4 +142,40 @@ export class CreateTask {
         .click();
     }
   }
+
+  /**
+   * @param accept The action to accept.
+   */
+  async accept(): Promise<void> {
+  const actionContainer = this.page.locator("div.flex.flex-wrap.items-center.gap-2").filter({
+    has: this.page.getByRole("button", {name: "Accept",exact: true})});
+     await actionContainer.getByRole("button", {name: "Accept",exact: true,}).click();
+  }
+  
+  /**
+   * @param start The action to accept.
+   */
+  async start():Promise<void>{
+    const actionContainer = this.page.locator("div.flex.flex-wrap.items-center.gap-2") 
+    .filter({has: this.page.getByRole("button", {name: "Start",exact: true})})
+    await actionContainer.click()
+
+  }
+
+  
+  /**
+   * @param complete The action to accept.
+   */
+  async complete():Promise<void>{
+    const actionContainer = this.page.locator("div.flex.flex-wrap.items-center.gap-2").filter({
+      has: this.page.getByRole("button", {
+        name: "Complete",
+        exact: true
+      }),
+    })
+    
+    await actionContainer.click()
+
+  }
+
 }

@@ -42,7 +42,8 @@ export class LoginPage {
         await this.signinButton();
 
         await this.page.waitForLoadState('networkidle');
-
+        
+        await expect( this.page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
 
     }
 

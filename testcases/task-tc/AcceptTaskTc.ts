@@ -1,4 +1,4 @@
-import { PageManagers } from "page-manager/Page-Manager";
+import { PageManagers } from "page-manager/page-manager"; 
 import credentials from "tests/fixture/test-data-management/Login.json";
 import task from "tests/fixture/test-data-management/tasks/CreateTask.json";
 import type { Page } from "@playwright/test";
@@ -18,9 +18,13 @@ export class AcceptTaskTc {
 
     //logout
     await this.logoutAndLoginUser2();
-
     //
     await this.verifyTaskNotification(taskID);
+    await this.page.pause();
+    //accept 
+    await this.pm.task.accept();
+
+
   }
 
   async createTaskAndGetID(): Promise<string> {
@@ -66,3 +70,6 @@ export class AcceptTaskTc {
     await this.pm.navigate.notification(taskID);
   }
 }
+
+
+
