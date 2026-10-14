@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { PageManagers } from "page-manager/Page-Manager";
+import { PageManagers } from "page-manager/page-manager";
 import credentials from "tests/fixture/test-data-management/Login.json";
 import task from "tests/fixture/test-data-management/tasks/CreateTask.json";
 
@@ -38,8 +38,10 @@ export class CreateTaskTc {
   async validateTask(): Promise<void> {
     await this.pm.task.assertTask(
       task.assertTask.title,
-      task.assertTask.assignee,
-      task.assertTask.status,
+      task.assertTask.createdBy,
+        task.assertTask.status,
+        task.assertTask.assignee,
+        task.assertTask.followers
     );
   }
 
