@@ -27,11 +27,11 @@ test('Verify task creation, validate task details, and delete the task @positive
 
     //assert
     await pm.task.assertTask(task.assertTask.title,
+        task.assertTask.createdBy,
+        task.assertTask.status,
         task.assertTask.assignee,
-        task.assertTask.status)
+        task.assertTask.followers);
+    
+    await pm.task.clickMoreAndDelete();
 
-        await pm.task.clickMoreAndDelete();
-
-
-    //
-});
+})

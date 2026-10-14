@@ -8,7 +8,9 @@
     },
     "assertTask":{
         "title":"Concurrent work to Wall paint",
-        "assignee":"Ascent User1",
-        "status":"Open"  
+        "createdBy":"Ascent User1",
+        "status":"Open",
+        "assignee":"Ascent User2",
+        "followers":"Ascent User1"
     }
 }

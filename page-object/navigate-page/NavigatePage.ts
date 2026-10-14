@@ -13,5 +13,5 @@ export class NavigatePages {
     async tasks(){
         await this.page.getByRole('link', { name: 'Tasks' }).click();
     }
-
+   
 }

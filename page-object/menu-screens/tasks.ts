@@ -70,15 +70,20 @@ export class CreateTask {
      * @param status passing string value in the status Field
      */
 
-    async assertTask(title :string ,assignee:string, status :string):Promise<void>{
+    async assertTask(title: string, createdBy: string, status: string, assignee: string, followers: string):Promise<void>{
         //heading
         await expect(this.page.getByRole('heading', { name: title })).toHaveText(title);
-        await this.page.pause();
+
         //create By 
-        await expect(this.page.locator('p').filter({ hasText: 'Created by' })).toContainText(assignee);
+        await expect(this.page.locator('p').filter({ hasText: 'Created by' })).toContainText(createdBy);
         //status
         await expect(this.page.locator('dd').getByText(status, { exact: true })).toHaveText(status);
-
+        //assigness
+        const assigneesCard =this. page.locator('div.rounded-card').filter({ hasText: 'Assignees' });
+        await expect( assigneesCard.getByText(assignee, { exact: true })).toBeVisible();
+         //followres
+       const followersCard = this.page.locator('div.rounded-card').filter({has: this.page.getByRole('heading', { name: 'Followers' })});
+       await expect(followersCard.locator('li')).toContainText(followers);
     }
     
 async clickMoreAndDelete(): Promise<void> {
