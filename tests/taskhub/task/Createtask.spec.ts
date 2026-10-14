@@ -1,37 +1,16 @@
-import { test } from '@playwright/test';
-import { PageManagers } from 'page-manager/page-manager';
-import { appUrls } from 'playwright.config';
-import credentials from 'tests/fixture/test-data-management/Login.json';
-import task from "tests/fixture/test-data-management/tasks/CreateTask.json"
-
+import { test } from "@playwright/test";
+import { appUrls } from "playwright.config";
+import { CreateTaskTc } from "testcases/task-tc/CreateTask.Tc"; 
 
 test.beforeEach(async ({ page }) => {
-    await page.goto(appUrls.loginURL);
+  await page.goto(appUrls.loginURL);
 });
 
-test('Verify task creation, validate task details, and delete the task @positive @regression', async ({ page }) => {
-    const pm = new PageManagers(page);
+test(
+  "Verify task creation, validate task details, and delete the task @positive @regression",
+  async ({ page }) => {
+    const createTaskTc = new CreateTaskTc(page);
 
-    const { company: tenant, userName, password } =
-        credentials.userone_credentials;
-
-    await pm.login.loginPage(tenant, userName, password, false, false);
-
-    await pm.task.createTask(
-        task.createTask.title,
-        task.createTask.assignee,
-        task.createTask.priority,
-        task.createTask.dueDate,
-        task.createTask.moreOption
-    );
-
-    //assert
-    await pm.task.assertTask(task.assertTask.title,
-        task.assertTask.assignee,
-        task.assertTask.status)
-
-        await pm.task.clickMoreAndDelete();
-
-
-    //
-});
+    await createTaskTc.createValidateDeleteTask();
+  },
+);
