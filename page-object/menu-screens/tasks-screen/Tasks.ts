@@ -1,7 +1,9 @@
-import { step } from "helpers/test-steps-decorator";
+import { step } from "helpers/Test-Steps-Decorator";
 import { Page, expect } from "@playwright/test";
+import { EditTask } from "./Edit-Task";
 
-export class CreateTask {
+
+export class Tasks {
   readonly page: Page;
 
   constructor(page: Page) {
@@ -98,21 +100,23 @@ export class CreateTask {
   @step
   async assertTask(
     title: string,
-    assignee: string,
+    createdBy: string,
     status: string,
+     assignee:string,  
+    followers:string
   ): Promise<void> {
     //heading
-    await expect(this.page.getByRole("heading", { name: title })).toHaveText(
-      title,
-    );
+    await expect(this.page.getByRole("heading", { name: title })).toHaveText(title,);
     //create By
-    await expect(
-      this.page.locator("p").filter({ hasText: "Created by" }),
-    ).toContainText(assignee);
+    await expect(this.page.locator("p").filter({ hasText: "Created by" })).toContainText(createdBy);
     //status
-    await expect(
-      this.page.locator("dd").getByText(status, { exact: true }),
-    ).toHaveText(status);
+    await expect(this.page.locator("dd").getByText(status, { exact: true })).toHaveText(status);
+    //assignee
+    const assigneesCard = this.page.locator('div.rounded-card').filter({ hasText: 'Assignees' });
+    await expect(assigneesCard.getByText(assignee, { exact: true })).toBeVisible();
+    //followres
+    const followersCard = this.page.locator('div.rounded-card').filter({ has: this.page.getByRole('heading', { name: 'Followers' }) });
+    await expect(followersCard.locator('li')).toContainText(followers);
   }
 
   /**
@@ -142,6 +146,12 @@ export class CreateTask {
         .click();
     }
   }
+
+  async deleteTask(){
+    await this.moreButton("Delete");
+  }
+
+
 
   /**
    * @param accept The action to accept.
@@ -177,5 +187,32 @@ export class CreateTask {
     await actionContainer.click()
 
   }
+
+
+    async editTaskandSave(title:string,categoryValue:string,typeValue:string,
+      desValue:string,days:string):Promise<void>{
+      
+      const edit = new EditTask(this.page);
+      await this.moreButton("Edit");
+      //edit page fill
+      await edit.editTaskScreen(title, categoryValue, typeValue, desValue, days);
+
+      }
+
+      
+async assertEditTask(days: string ,description :string) {
+  //working days 
+  const estimate = `${days} working days`;
+
+  await expect(this.page.locator('div').filter({has: this.page.locator('dt').getByText('Estimate', { exact: true })})
+  .getByText(estimate, { exact: true })).toBeVisible();
+  //description 
+  await expect(this.page.getByText(description, { exact: true })).toBeVisible();
+}
+
+
+
+
+  
 
 }

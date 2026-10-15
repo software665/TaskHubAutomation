@@ -1,4 +1,4 @@
-import { step } from "helpers/test-steps-decorator"
+import { step } from 'helpers/Test-Steps-Decorator';
 import { Page, expect } from '@playwright/test'
 
 
