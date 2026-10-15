@@ -20,7 +20,7 @@ export class AcceptTaskTc {
     await this.logoutAndLoginUser2();
     //
     await this.verifyTaskNotification(taskID);
-    await this.page.pause();
+
     //accept 
     await this.pm.task.accept();
 
