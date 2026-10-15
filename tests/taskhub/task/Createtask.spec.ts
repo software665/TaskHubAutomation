@@ -11,6 +11,6 @@ test(
   async ({ page }) => {
     const createTaskTc = new CreateTaskTc(page);
 
-    await createTaskTc.createValidateDeleteTask();
+    await createTaskTc.createValidateEditTask();
   },
 );
