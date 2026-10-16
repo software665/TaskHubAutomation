@@ -9,25 +9,31 @@ export class TaskReports {
   }
 
   @step
-  async selectReportTask(taskID: string): Promise<void> {
-    // Locate the task table
-    const table = this.page.locator("table");
+async selectReportTask(taskID: string,reportValue:Object): Promise<void> {
+  const table = this.page.locator("table");
 
-    // Find the row containing the exact Task ID
-    const taskRow = table.locator("tbody tr").filter({
-      has: this.page
-        .locator("td:first-child span")
-        .getByText(new RegExp(`^${taskID}\\b`)),
-    });
+  // Find the row using Task ID
+  const taskRow = table.locator("tbody tr").filter({
+    has: this.page.getByText(taskID, { exact: false }),
+  });
 
-    // Verify matching task exists
-    await expect(taskRow).toHaveCount(1);
+  await expect(taskRow).toHaveCount(1);
 
-    console.log("Matched Task ID:", taskID);
+  console.log("Matched Task ID:", taskID);
 
-    // Click matching task row
-    await taskRow.click();
+  // Get expected values from JSON
+  const expectedValues = Object.values(reportValue);
 
-    console.log("Clicked Task ID:", taskID);
+  // Assert values inside matched TR
+  for (const value of expectedValues) {
+    await expect(taskRow).toContainText(value);
+
+    console.log(`Verified: ${value}`);
   }
+
+  // Click the matched row
+  await taskRow.click();
+
+  console.log("Clicked Task ID:", taskID);
+}
 }

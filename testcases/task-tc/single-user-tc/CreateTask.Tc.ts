@@ -44,9 +44,12 @@ export class CreateTaskTc {
     await this.pm.navigate.taskReports();
 
     //select reports
-    await this.pm.taskReports.selectReportTask(taskID);
+    await this.pm.taskReports.selectReportTask(taskID,task.reportTask);
+    //taskID assert 
+    await this.pm.task.assertTaskID(taskID);
     //delete
     await this.pm.task.moreButton("Delete");
+   
   }
 
   /**

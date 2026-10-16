@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 import { appUrls } from "playwright.config";
-import { CreateTaskTc } from "testcases/task-tc/CreateTask.Tc"; 
+import { CreateTaskTc } from "testcases/task-tc/single-user-tc/CreateTask.Tc"; 
 
 test.beforeEach(async ({ page }) => {
   await page.goto(appUrls.loginURL);

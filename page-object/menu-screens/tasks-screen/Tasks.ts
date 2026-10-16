@@ -63,6 +63,19 @@ export class Tasks {
     return taskID;
   }
 
+  //assert taskID
+  async assertTaskID(expectedTaskID: string): Promise<void> {
+  const taskIdLocator = this.page
+    .locator(
+      'span.inline-flex:has(svg path[d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"])',
+    )
+    .filter({ hasText: /^TSK-\d{4}-\d+$/ });
+
+  await expect(taskIdLocator.last()).toHaveText(expectedTaskID);
+
+  console.log(`Task ID verified: ${expectedTaskID}`);
+}
+
   async addTaskButton() {
     await this.page
       .getByRole("button", { name: "Create Task", exact: true })

@@ -16,5 +16,11 @@
         "typeValue": "Followups",
         "desValue": "Description Wall Points",
         "days": "29"
-    }
+    },
+     "reportTask": {
+    "title": "Concurrent work to Wall paint",
+    "status": "Open",
+    "assignee": "Ascent User1",
+    "priority": "High"
+  }
 }
