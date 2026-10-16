@@ -1,0 +1,60 @@
+{
+    "createTask": {
+        "title": "Accept Task, Resume, and Hold",
+        "assignee": "Ascent User1",
+        "priority": "Low",
+        "dueDate": false,
+        "moreOption": false
+    },
+        "assertTask": {
+        "createdBy": "Ascent User1",
+        "status": "Open",
+        "followers": "Ascent User1"
+    },
+    "acceptTask": {
+    "title": "Accept Task, Resume, and Hold",
+    "status": "Accepted",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+  },
+  "startTask":{
+
+      "title": "Accept Task, Resume, and Hold",
+    "status": "In Progress",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+  },
+  "pauseTask":{
+    
+      "title": "Accept Task, Resume, and Hold",
+    "status": "On Hold",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+
+  },
+  "resumeTask":{
+    "title": "Accept Task, Resume, and Hold",
+    "status": "In Progress",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+  },
+  "completedTask":{
+    "title": "Accept Task, Resume, and Hold",
+    "status": "Completed",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+  },
+  "closedTask":{
+     "title": "Accept Task, Resume, and Hold",
+    "status": "Closed",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+  },
+  "reopenTask":{
+    "title": "Accept Task, Resume, and Hold",
+    "status": "Draft",
+    "assignee": "Ascent User1",
+    "priority": "Low"
+  }
+
+}

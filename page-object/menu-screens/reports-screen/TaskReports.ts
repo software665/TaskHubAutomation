@@ -13,9 +13,7 @@ async selectReportTask(taskID: string,reportValue:Object): Promise<void> {
   const table = this.page.locator("table");
 
   // Find the row using Task ID
-  const taskRow = table.locator("tbody tr").filter({
-    has: this.page.getByText(taskID, { exact: false }),
-  });
+  const taskRow = table.locator("tbody tr").filter({has: this.page.getByText(taskID, { exact: false })});
 
   await expect(taskRow).toHaveCount(1);
 

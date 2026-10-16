@@ -1,18 +1,27 @@
 import { test } from "@playwright/test";
 import { appUrls } from "playwright.config";
-import { CreateTaskTc } from "testcases/task-tc/single-user-tc/CreateTask.Tc"; 
+import { AcceptTaskSingleTc } from "testcases/task-tc/single-user-tc/AcceptTaskSingle-Tc";
+
 
 test.beforeEach(async ({ page }) => {
   await page.goto(appUrls.loginURL);
 });
 
 
-test(
-  `Verify successful task creation, validate the task details, update and verify the edited information, locate the task in 
-  Task Reports using its generated Task ID, and delete the task. @positive @regression`,
-  async ({ page }) => {
-    const createTaskTc = new CreateTaskTc(page);
+test.describe("Task Lifecycle Validation @regression @smoke", () => {
 
+  test(
+    `Verify task creation and complete task lifecycle:
+     Open → Accepted → In Progress → On Hold →
+     In Progress → Completed → Closed → Draft.
+     Validate task details in Task Reports after each status transition.`,
+    async ({ page }) => {
 
+      const acceptTaskTc = new AcceptTaskSingleTc(page);
 
-  })
+      await acceptTaskTc.acceptValidateEditTask();
+
+    }
+  );
+
+});

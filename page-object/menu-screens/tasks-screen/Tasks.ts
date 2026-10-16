@@ -2,7 +2,6 @@ import { step } from "helpers/Test-Steps-Decorator";
 import { Page, expect } from "@playwright/test";
 import { EditTask } from "./Edit-Task";
 
-
 export class Tasks {
   readonly page: Page;
 
@@ -65,16 +64,16 @@ export class Tasks {
 
   //assert taskID
   async assertTaskID(expectedTaskID: string): Promise<void> {
-  const taskIdLocator = this.page
-    .locator(
-      'span.inline-flex:has(svg path[d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"])',
-    )
-    .filter({ hasText: /^TSK-\d{4}-\d+$/ });
+    const taskIdLocator = this.page
+      .locator(
+        'span.inline-flex:has(svg path[d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"])',
+      )
+      .filter({ hasText: /^TSK-\d{4}-\d+$/ });
 
-  await expect(taskIdLocator.last()).toHaveText(expectedTaskID);
+    await expect(taskIdLocator.last()).toHaveText(expectedTaskID);
 
-  console.log(`Task ID verified: ${expectedTaskID}`);
-}
+    console.log(`Task ID verified: ${expectedTaskID}`);
+  }
 
   async addTaskButton() {
     await this.page
@@ -115,21 +114,38 @@ export class Tasks {
     title: string,
     createdBy: string,
     status: string,
-     assignee:string,  
-    followers:string
+    assignee: string,
+    followers: string,
   ): Promise<void> {
     //heading
-    await expect(this.page.getByRole("heading", { name: title })).toHaveText(title,);
+    await expect(this.page.getByRole("heading", { name: title })).toHaveText(
+      title,
+    );
     //create By
-    await expect(this.page.locator("p").filter({ hasText: "Created by" })).toContainText(createdBy);
-    //status
-    await expect(this.page.locator("dd").getByText(status, { exact: true })).toHaveText(status);
+    await expect(
+      this.page.locator("p").filter({ hasText: "Created by" }),
+    ).toContainText(createdBy);
+    //status text
+    await this.statusText(status);
     //assignee
-    const assigneesCard = this.page.locator('div.rounded-card').filter({ hasText: 'Assignees' });
-    await expect(assigneesCard.getByText(assignee, { exact: true })).toBeVisible();
+    const assigneesCard = this.page
+      .locator("div.rounded-card")
+      .filter({ hasText: "Assignees" });
+    await expect(
+      assigneesCard.getByText(assignee, { exact: true }),
+    ).toBeVisible();
     //followres
-    const followersCard = this.page.locator('div.rounded-card').filter({ has: this.page.getByRole('heading', { name: 'Followers' }) });
-    await expect(followersCard.locator('li')).toContainText(followers);
+    const followersCard = this.page
+      .locator("div.rounded-card")
+      .filter({ has: this.page.getByRole("heading", { name: "Followers" }) });
+    await expect(followersCard.locator("li")).toContainText(followers);
+  }
+
+  async statusText(status: string): Promise<void> {
+    //status
+    await expect(
+      this.page.locator("dd").getByText(status, { exact: true }),
+    ).toHaveText(status);
   }
 
   /**
@@ -160,72 +176,76 @@ export class Tasks {
     }
   }
 
-  async deleteTask(){
+  async deleteTask() {
     await this.moreButton("Delete");
   }
 
-
-
-  /**
-   * @param accept The action to accept.
-   */
-  async accept(): Promise<void> {
-  const actionContainer = this.page.locator("div.flex.flex-wrap.items-center.gap-2").filter({
-    has: this.page.getByRole("button", {name: "Accept",exact: true})});
-     await actionContainer.getByRole("button", {name: "Accept",exact: true,}).click();
-  }
-  
-  /**
-   * @param start The action to accept.
-   */
-  async start():Promise<void>{
-    const actionContainer = this.page.locator("div.flex.flex-wrap.items-center.gap-2") 
-    .filter({has: this.page.getByRole("button", {name: "Start",exact: true})})
-    await actionContainer.click()
-
-  }
-
-  
-  /**
-   * @param complete The action to accept.
-   */
-  async complete():Promise<void>{
-    const actionContainer = this.page.locator("div.flex.flex-wrap.items-center.gap-2").filter({
-      has: this.page.getByRole("button", {
-        name: "Complete",
-        exact: true
-      }),
-    })
-    
-    await actionContainer.click()
-
-  }
-
-
-    async editTaskandSave(title:string,categoryValue:string,typeValue:string,
-      desValue:string,days:string):Promise<void>{
-      
-      const edit = new EditTask(this.page);
-      await this.moreButton("Edit");
-      //edit page fill
-      await edit.editTaskScreen(title, categoryValue, typeValue, desValue, days);
-
-      }
-
-      
-async assertEditTask(days: string ,description :string) {
-  //working days 
-  const estimate = `${days} working days`;
-
-  await expect(this.page.locator('div').filter({has: this.page.locator('dt').getByText('Estimate', { exact: true })})
-  .getByText(estimate, { exact: true })).toBeVisible();
-  //description 
-  await expect(this.page.getByText(description, { exact: true })).toBeVisible();
+  async assertTaskToast(title: string,status: string): Promise<void> {
+  const toast = this.page.locator('[role="status"]').filter({hasText: title});
+  await expect(toast).toBeVisible();
+  await expect(toast).toContainText(title);
+  await expect(toast).toContainText(`Status: ${status}`);
+  console.log(`Toast verified: ${title} - ${status}`);
 }
 
+async closeToast(): Promise<void> {
+  const toast = this.page.locator('[role="status"]');
+  const closeButton = toast.getByRole("button", {name: "Dismiss notification"});
+  await closeButton.click();
+  await expect(toast).toBeHidden();
+  console.log("Toast notification closed successfully");
+}
 
+/**
+ * Performs a task action, validates the updated status,
+ * and dismisses the toast notification.
+ *
+ * @param action - Task action (Accept, Start, Pause, Resume, Complete, Close, Reopen).
+ * @param status - Expected task status after the action.
+ */
+async taskAction(action: string, status: string): Promise<void> {
 
+  // Click task action button
+  const actionButton = this.page.locator(`button[aria-label="${action} Task"]`);
 
-  
+  await actionButton.click();
 
+  // Verify updated task status
+  await this.statusText(status);
+
+  await this.closeToast();
+  console.log(`${action} Task - ${status} verified successfully`);
+}
+
+ 
+  async editTaskandSave(
+    title: string,
+    categoryValue: string,
+    typeValue: string,
+    desValue: string,
+    days: string,
+  ): Promise<void> {
+    const edit = new EditTask(this.page);
+    await this.moreButton("Edit");
+    //edit page fill
+    await edit.editTaskScreen(title, categoryValue, typeValue, desValue, days);
+  }
+
+  async assertEditTask(days: string, description: string) {
+    //working days
+    const estimate = `${days} working days`;
+
+    await expect(
+      this.page
+        .locator("div")
+        .filter({
+          has: this.page.locator("dt").getByText("Estimate", { exact: true }),
+        })
+        .getByText(estimate, { exact: true }),
+    ).toBeVisible();
+    //description
+    await expect(
+      this.page.getByText(description, { exact: true }),
+    ).toBeVisible();
+  }
 }
