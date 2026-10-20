@@ -10,7 +10,7 @@ export class NavigatePages {
 
   @step
   async tasks(): Promise<void> {
-    await this.page.getByRole("link", { name: "Tasks" }).click();
+    await this.page.locator('[data-tour="tasks-menu"]').click();
   }
 
  @step

@@ -1,0 +1,18 @@
+
+{
+  "createTask": {
+    "title": "Concurrent work to Wall paint",
+    "assignee": "Ascent User1",
+    "priority": "High",
+    "dueDate": true,
+    "dateDetails": [
+      {
+        "date": "today",
+        "hour": "10",
+        "minute": "30",
+        "period": "AM"
+      }
+    ],
+    "moreOption": true
+  }
+}

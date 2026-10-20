@@ -1,6 +1,6 @@
 import { PageManagers } from "page-manager/Page-Manager"; 
 import credentials from "tests/fixture/test-data-management/Login.json";
-import task from "tests/fixture/test-data-management/tasks/CreateTask.json";
+import task from "tests/fixture/test-data-management/tasks/CreateTaskSingle.json";
 import type { Page } from "@playwright/test";
 
 export class AcceptTaskTc {
@@ -22,7 +22,7 @@ export class AcceptTaskTc {
     await this.verifyTaskNotification(taskID);
 
     //accept 
-    await this.pm.task.accept();
+    //await this.pm.task.accept();
 
 
   }

@@ -1,12 +1,16 @@
 import { step } from "helpers/Test-Steps-Decorator";
 import { Page, expect } from "@playwright/test";
 import { EditTask } from "./Edit-Task";
+import { DatePicker } from "page-object/utils/DatePicker";
 
 export class Tasks {
   readonly page: Page;
 
+  readonly datePicker :DatePicker;
+
   constructor(page: Page) {
     this.page = page;
+    this.datePicker = new DatePicker(page);
   }
 
   /**
@@ -19,32 +23,63 @@ export class Tasks {
    */
 
   @step
-  async createTask(
+
+async createTask(
     title: string,
     assignee: string,
     priority: string,
     moreOptions: boolean,
-    dueDate?: boolean,
-    date: string = "",
-  ) {
-    // Button
+    dueDate: boolean = false,
+    date?: string,
+    hour?: string,
+    minute?: string,
+    period?: 'AM' | 'PM',
+    dueDateSelector?: string
+): Promise<void> {
+
+    // Open Create Task popup
     await this.addTaskButton();
 
+    // Fill task details
     await this.popupField(title, assignee, priority);
 
     // Due Date
     if (dueDate) {
-      await this.page.locator("#quick-due").fill(date);
+
+        // Validate required date parameters
+        if (!date ||!hour ||!minute ||!period ||!dueDateSelector) {
+            throw new Error(
+                "When dueDate is true, date, hour, minute, period and dueDateSelector are required"
+            );
+        }
+
+        await this.datePicker.selectDueDate(dueDateSelector,date,hour,minute,period);
     }
+
+    // More Options
     if (moreOptions) {
-      // More Options
-      await this.page.getByRole("button", { name: "More Options" }).click();
+        await this.page.getByRole("button", {name: "More Options"}).click();
+
+        await this.page.pause();
+
+        await this.moreOptionsDropDown();
     }
+
     // Create Task
     await this.createTaskButton();
-    //waitfor
-    await this.page.locator("div[class*='flex-wrap']").first().waitFor();
+
+    // Wait for task UI
+    await this.page.locator(
+        "div[class*='flex-wrap']"
+    ).first().waitFor();
+}
+
+
+  async moreOptionsDropDown(){
+
   }
+
+  
 
   //task ID
   async getTaskID(): Promise<string> {
@@ -115,29 +150,26 @@ export class Tasks {
     createdBy: string,
     status: string,
     assignee: string,
-    followers: string,
+    follower:string,
+
   ): Promise<void> {
     //heading
     await expect(this.page.getByRole("heading", { name: title })).toHaveText(
       title,
     );
     //create By
-    await expect(
-      this.page.locator("p").filter({ hasText: "Created by" }),
-    ).toContainText(createdBy);
+    await expect(this.page.locator("p").filter({ hasText: "Created by" })).toContainText(createdBy);
     //status text
     await this.statusText(status);
     //assignee
-    const assigneesCard = this.page
-      .locator("div.rounded-card")
-      .filter({ hasText: "Assignees" });
-    await expect(
-      assigneesCard.getByText(assignee, { exact: true }),
-    ).toBeVisible();
-    //followres
-    const followersCard = this.page
-      .locator("div.rounded-card")
-      .filter({ has: this.page.getByRole("heading", { name: "Followers" }) });
+    const assigneesCard = this.page.locator("div.rounded-card").filter({ hasText: "Assignees" });
+    await expect(assigneesCard.getByText(assignee, { exact: true }),).toBeVisible();
+   
+  }
+
+  async followers(followers:string):Promise<void>{
+     //followres
+    const followersCard = this.page.locator("div.rounded-card").filter({ has: this.page.getByRole("heading", { name: "Followers" }) });
     await expect(followersCard.locator("li")).toContainText(followers);
   }
 
@@ -247,5 +279,74 @@ async taskAction(action: string, status: string): Promise<void> {
     await expect(
       this.page.getByText(description, { exact: true }),
     ).toBeVisible();
+  }
+
+  async searchBar(taskID:string):Promise<void>{
+    await this.page.locator('input[aria-label="Search tasks"]').fill(taskID);
+  }
+
+ /**
+   * @param filterType - Status, Priority, or Category
+   * @param value - Dropdown option to select
+   */
+  async filterBy(
+    filterType: 'Status' | 'Priority' | 'Category',value: string): Promise<void> {
+
+    // Open the required dropdown
+    const dropdown = this.page.getByRole('combobox', {name: `Filter by ${filterType.toLowerCase()}`,exact: true});
+
+    await dropdown.click();
+
+    // Select the requested option
+    const option = this.page.getByRole('option', {name: value,exact: true});
+
+    await expect(option).toBeVisible();
+    await option.click();
+
+    // Validate the selected dropdown value
+    await expect(dropdown).toContainText(value);
+
+    // Validate active filter chip
+    if (!value.startsWith('All')) {
+      const activeFilters = this.page.getByLabel('Active filters');
+
+      await expect(activeFilters).toContainText(`${filterType}:`);
+
+      await expect(activeFilters).toContainText(value);
+    }
+  }
+
+
+async listViewAssert(
+  taskID: string,
+  taskName: string,
+  status: string,
+  priority: string,
+  
+): Promise<void> {
+
+  // Find the task card using Task ID
+  const taskCard = this.page.locator('[role="listitem"]').filter({ hasText: taskID });
+
+  await expect(taskCard).toBeVisible();
+  // Validate Task ID
+  await expect(taskCard.locator('p').filter({hasText: taskID})).toHaveText(taskID);
+  // Validate Task Name
+  await expect(taskCard.locator('[data-list-card-title="true"]')).toHaveText(taskName, {useInnerText: true});
+  // Validate Status
+  await expect(taskCard.locator('dt[title="Status"] + dd')).toHaveText(status);
+  // Validate Priority
+  await expect(taskCard.locator('dt[title="Priority"] + dd')).toHaveText(priority);
+}
+
+async clearFilter():Promise<void>{
+  await this.page.getByRole("button",{name:"Clear filters"}).click();
+}
+
+
+
+
+  async attachements(){
+
   }
 }
