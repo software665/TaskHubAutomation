@@ -1,9 +1,9 @@
 import { Page } from "@playwright/test";
 import { PageManagers } from "page-manager/Page-Manager";
 import credentials from "tests/fixture/test-data-management/Login.json";
-import task from "tests/fixture/test-data-management/tasks/CreateTask.json";
+import task from "tests/fixture/test-data-management/tasks/CreateTaskSingle.json";
 
-export class CreateTaskTc {
+export class CreateTaskSingleTc {
   readonly page: Page;
   private pm: PageManagers;
 
@@ -44,10 +44,15 @@ export class CreateTaskTc {
     await this.pm.navigate.taskReports();
 
     //select reports
-    await this.pm.taskReports.selectReportTask(taskID);
+    await this.pm.taskReports.selectReportTask(taskID,task.reportTask);
+    //taskID assert 
+    await this.pm.task.assertTaskID(taskID);
     //delete
     await this.pm.task.moreButton("Delete");
+   
   }
+
+  
 
   /**
    * Login User

@@ -1,0 +1,38 @@
+
+{
+    "completed":{
+        "taskID":"TSK-2026-000185",
+        "taskName":"Existing Task Completed",
+        "status":"Completed",
+        "priority":"Medium",
+        "category":"General"
+    },
+    "onHold":{
+        "taskID":"TSK-2026-000184",
+        "taskName" :"Existing Task pause",
+        "status":"On Hold",
+        "priority":"Low",
+        "category":"Follow-up"
+    },
+    "started":{
+        "taskID":"TSK-2026-000183",
+        "taskName":"Existing Task Started",
+        "status":"In Progress",
+        "priority":"Medium",
+        "category":"Compliance"
+    },
+    "accepted":{
+        "taskID":"TSK-2026-000182",
+        "taskName":"Existing Task Accepetd",
+        "status":"Accepted",
+        "priority":"Critical",
+        "category":"Administrative"
+    },
+    "open":{
+        "taskID":"TSK-2026-000181",
+        "taskName":"Existing Task Open",
+        "status":"Open",
+        "priority":"High",
+        "category":"Administrative"
+    }
+}
