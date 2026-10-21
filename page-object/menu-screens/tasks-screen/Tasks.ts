@@ -3,13 +3,11 @@ import { Page, expect } from "@playwright/test";
 import { EditTask } from "./Edit-Task";
 import { DatePicker } from "page-object/utils/DatePicker";
 
-export class Tasks {
-  readonly page: Page;
-
+export class Tasks extends EditTask {
   readonly datePicker :DatePicker;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.datePicker = new DatePicker(page);
   }
 
@@ -23,61 +21,147 @@ export class Tasks {
    */
 
   @step
-
 async createTask(
-    title: string,
-    assignee: string,
-    priority: string,
-    moreOptions: boolean,
-    dueDate: boolean = false,
-    date?: string,
-    hour?: string,
-    minute?: string,
-    period?: 'AM' | 'PM',
-    dueDateSelector?: string
+  title: string,
+  assignee: string,
+  priority: string,
+  moreOptions: boolean = false,
+  dueDate: boolean = false,
+  categoryValue?: string,
+  typeValue?: string,
+  desValue?: string,
+  tagValue?: string,
+  assignmentType?: string,
+  assignToValue?: string,
+  date?: string,
+  hour?: string,
+  minute?: string,
+  period?: "AM" | "PM",
+  dueDateSelector?: string
 ): Promise<void> {
 
-    // Open Create Task popup
-    await this.addTaskButton();
+  await this.addTaskButton();
 
-    // Fill task details
-    await this.popupField(title, assignee, priority);
+  await this.popupField(title, assignee, priority);
 
-    // Due Date
-    if (dueDate) {
-
-        // Validate required date parameters
-        if (!date ||!hour ||!minute ||!period ||!dueDateSelector) {
-            throw new Error(
-                "When dueDate is true, date, hour, minute, period and dueDateSelector are required"
-            );
-        }
-
-        await this.datePicker.selectDueDate(dueDateSelector,date,hour,minute,period);
+  if (dueDate) {
+    if (!date || !hour || !minute || !period || !dueDateSelector) {
+      throw new Error("Due date details are required");
     }
 
-    // More Options
-    if (moreOptions) {
-        await this.page.getByRole("button", {name: "More Options"}).click();
+    await this.datePicker.selectDueDate(
+      dueDateSelector,
+      date,
+      hour,
+      minute,
+      period
+    );
+  }
 
-        await this.page.pause();
-
-        await this.moreOptionsDropDown();
+  if (moreOptions) {
+    if (
+      !categoryValue ||
+      !typeValue ||
+      !desValue ||
+      !tagValue ||
+      !assignmentType ||
+      !assignToValue
+    ) {
+      throw new Error("More Options details are required");
     }
 
-    // Create Task
-    await this.createTaskButton();
+    await this.page.getByRole("button", {
+      name: "More Options"
+    }).click();
 
-    // Wait for task UI
-    await this.page.locator(
-        "div[class*='flex-wrap']"
-    ).first().waitFor();
+    await this.moreOptionsDropDown(
+      categoryValue,
+      typeValue,
+      desValue,
+      tagValue,
+      assignmentType,
+      assignToValue
+    );
+  }
+
+  await this.createTaskButton();
 }
 
 
-  async moreOptionsDropDown(){
 
+
+  async moreOptionsDropDown(categoryValue: string, typeValue: string, 
+    desValue: string, tagValue: string,assignmentType:string,assignToValue:string){
+    //basic information
+    await this.basicInformation(categoryValue,typeValue,desValue,tagValue);
+    //assignment
+    await this.assignment(assignmentType,assignToValue);
+    //planning 
+    //advanced
   }
+
+  
+async addChecklist(checklistItems: string[]): Promise<void> {
+  for (const item of checklistItems) {
+    // Fill checklist name
+    await this.page.getByRole("textbox", {name: "New checklist item"}).fill(item);
+
+    // Click Add button
+    await this.page.getByRole("button", {name: "Add",exact: true}).click();
+
+    console.log(`Checklist added: ${item}`);
+  }
+}
+
+
+
+async checkChecklist(checklistItems: string[]): Promise<void> {
+  for (const item of checklistItems) {
+    // 1. Find the checklist ROW by its item name.
+    //    Scope to the checklist container if you have one (better than div.group).
+    const row = this.page.locator("div.group") // row has class group
+      .filter({has: this.page.locator("span.flex-1") .getByText(item, { exact: true })})
+      .first(); // guard against stray matches
+
+    await expect(row, `Checklist row "${item}" should be visible`).toBeVisible();
+
+    // 2. Get the checkbox inside this specific row
+    const checkbox = row.locator('input[type="checkbox"]');
+    await expect(checkbox).toBeVisible();
+
+    // 3. Only check if not already checked (rows like "Check wall condition"
+    //    may arrive pre-checked from the template).
+    if (!(await checkbox.isChecked())) {
+      await checkbox.click();
+    }
+
+    // 4. Verify checked state
+    await expect(checkbox).toBeChecked();
+    console.log(`Checklist "${item}" checked successfully`);
+  }
+}
+
+
+async remove_unChecklist(checkListRemove: string[]): Promise<void> {
+  for (const item of checkListRemove) {
+    // Locate checklist row by exact item name
+    const checklistRow = this.page.locator("div.group").filter({ has: this.page.getByText(item, { exact: true })});
+    // Assert checklist item exists
+    await expect(checklistRow).toBeVisible();
+
+    // Click Remove item button
+    await checklistRow.getByRole("button", {name: "Remove item"}).click();
+
+    // Assert checklist item is removed
+    await expect(checklistRow).toHaveCount(0);
+
+    console.log(`Checklist "${item}" removed successfully`);
+  }
+}
+
+async subTask():Promise<void>{
+
+}
 
   
 
@@ -121,20 +205,16 @@ async createTask(
     // Task Title
     await this.page.locator("#quick-title").fill(title);
     // Assign To
-    await this.page.locator("#quick-assignee").fill(assignee);
-    await this.page.getByRole("option").filter({ hasText: assignee }).click();
+    await this.assignTo(assignee);
     // Priority
     await this.page.locator("#quick-priority").click();
-    await this.page
-      .getByRole("option", { name: priority, exact: true })
-      .click();
+    await this.page.getByRole("option", { name: priority, exact: true }).click();
   }
 
+
+
   async createTaskButton() {
-    await this.page
-      .getByRole("button", { name: "Create Task", exact: true })
-      .last()
-      .click();
+    await this.page.getByRole("button", { name: "Create Task", exact: true }).last().click();
     await this.page.waitForLoadState("networkidle");
   }
 
@@ -164,14 +244,32 @@ async createTask(
     //assignee
     const assigneesCard = this.page.locator("div.rounded-card").filter({ hasText: "Assignees" });
     await expect(assigneesCard.getByText(assignee, { exact: true }),).toBeVisible();
+    //followers
+    await this.followers(follower)
    
   }
 
-  async followers(followers:string):Promise<void>{
-     //followres
-    const followersCard = this.page.locator("div.rounded-card").filter({ has: this.page.getByRole("heading", { name: "Followers" }) });
-    await expect(followersCard.locator("li")).toContainText(followers);
+
+async followers(follower: string): Promise<void> {
+  const followersCard = this.page.locator("div.rounded-card").filter({
+      has: this.page.getByRole("heading", {name: "Followers",exact: true})});
+
+  await expect(followersCard).toBeVisible();
+
+  const noFollowers = followersCard.getByText("No followers yet.", {exact: true});
+
+  // Check whether followers are available
+  if (await noFollowers.isVisible()) {
+    await expect(noFollowers).toBeVisible();
+    console.log("No followers yet.");
+  } else {
+    // Assert follower name
+    await expect(followersCard.locator("li")).toContainText(follower);
+
+    console.log(`Follower "${follower}" verified successfully`);
   }
+}
+
 
   async statusText(status: string): Promise<void> {
     //status
@@ -257,11 +355,13 @@ async taskAction(action: string, status: string): Promise<void> {
     desValue: string,
     days: string,
   ): Promise<void> {
-    const edit = new EditTask(this.page);
+   
     await this.moreButton("Edit");
     //edit page fill
-    await edit.editTaskScreen(title, categoryValue, typeValue, desValue, days);
+    await this.editTaskScreen(title, categoryValue, typeValue, desValue, days);
   }
+
+
 
   async assertEditTask(days: string, description: string) {
     //working days
@@ -344,9 +444,23 @@ async clearFilter():Promise<void>{
 }
 
 
+async attachements(filePaths: string[]): Promise<void> {
+  const uploadButton = this.page.getByRole("button", {name: "Upload Files",exact: true});
+
+  // Assert upload button is visible
+  await expect(uploadButton).toBeVisible();
+  // Handle file chooser
+  const [fileChooser] = await Promise.all([
+    this.page.waitForEvent("filechooser"),
+    uploadButton.click()
+  ]);
+
+  // Upload files
+  await fileChooser.setFiles(filePaths);
+  console.log(`Files selected: ${filePaths.join(", ")}`);
+}
 
 
-  async attachements(){
 
-  }
+
 }

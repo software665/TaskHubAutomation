@@ -1,4 +1,3 @@
-
 {
   "createTask": {
     "title": "Concurrent work to Wall paint",
@@ -13,6 +12,36 @@
         "period": "AM"
       }
     ],
-    "moreOption": true
-  }
+    "moreOption": true,
+    "basicInformation": {
+      "category": "General",
+      "type": "Followups",
+      "description": "Moe options",
+      "tags": "test"
+    },
+    "assignment": {
+      "assignmentType": "Individual",
+      "assignTo": "Ascent User1"
+    }
+      },
+  "checklist": [
+    "Check wall condition",
+    "Purchase paint materials",
+    "Clean the wall",
+    "Apply primer",
+    "Complete wall painting"
+  ],
+   "checkListRemove": [
+    "Clean the wall",
+    "Apply primer"
+  ],
+  "attachments": [
+    "tests/fixture/files/Azcentrix_Desk_QA_Test_Report.docx",
+    "tests/fixture/files/40 AI Terms.jpeg"
+  ]
+
+  
+
+
+
 }

@@ -90,6 +90,8 @@ for (const { action, status, data } of taskActions) {
       acceptSingle.assertTask.createdBy,
       acceptSingle.assertTask.status,
       acceptSingle.createTask.assignee,
+      acceptSingle.assertTask.followers
+      
     );
   }
 }
