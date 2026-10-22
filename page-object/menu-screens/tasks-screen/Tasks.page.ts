@@ -166,33 +166,45 @@ async subTask():Promise<void>{
   
 
   //task ID
-  async getTaskID(): Promise<string> {
-    const taskIdLocator = this.page
-      .locator(
-        'span.inline-flex:has(svg path[d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"])',
-      )
-      .filter({ hasText: /^TSK-\d{4}-\d+$/ });
 
-    await taskIdLocator.last().waitFor({ state: "visible" });
+async getTaskID(): Promise<string> {
+  // Step 1: Locate Task ID
+  const taskIdLocator = this.page
+    .locator('span.inline-flex > span[aria-current="page"]')
+    .filter({ hasText: /^TSK-\d{4}-\d+$/ })
+    .last();
 
-    const taskID = (await taskIdLocator.last().innerText()).trim();
+  // Step 2: Scroll into view
+  //await taskIdLocator.scrollIntoViewIfNeeded();
 
-    console.log("Task ID -", taskID);
-    return taskID;
-  }
+  // Step 3: Assert Task ID is visible
+  await expect(taskIdLocator).toBeVisible();
+
+  // Step 4: Get Task ID
+  const taskID = (await taskIdLocator.innerText()).trim();
+
+  // Step 5: Validate Task ID format
+  expect(taskID).toMatch(/^TSK-\d{4}-\d+$/);
+
+  console.log(`Task ID - ${taskID}`);
+
+  return taskID;
+}
+
 
   //assert taskID
-  async assertTaskID(expectedTaskID: string): Promise<void> {
-    const taskIdLocator = this.page
-      .locator(
-        'span.inline-flex:has(svg path[d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"])',
-      )
-      .filter({ hasText: /^TSK-\d{4}-\d+$/ });
 
-    await expect(taskIdLocator.last()).toHaveText(expectedTaskID);
+async assertTaskID(expectedTaskID: string): Promise<void> {
+  const taskIdLocator = this.page.locator(
+    'span[aria-current="page"]'
+  ).filter({ hasText: /^TSK-\d{4}-\d+$/ });
 
-    console.log(`Task ID verified: ${expectedTaskID}`);
-  }
+  await expect(taskIdLocator).toHaveText(expectedTaskID);
+
+  console.log(`Task ID verified: ${expectedTaskID}`);
+}
+
+
 
   async addTaskButton() {
     await this.page
@@ -244,31 +256,61 @@ async subTask():Promise<void>{
     //assignee
     const assigneesCard = this.page.locator("div.rounded-card").filter({ hasText: "Assignees" });
     await expect(assigneesCard.getByText(assignee, { exact: true }),).toBeVisible();
+  
     //followers
     await this.followers(follower)
    
   }
 
 
+
+
+
+
 async followers(follower: string): Promise<void> {
-  const followersCard = this.page.locator("div.rounded-card").filter({
-      has: this.page.getByRole("heading", {name: "Followers",exact: true})});
+  const followersCard = this.page
+    .locator("div.rounded-card")
+    .filter({
+      has: this.page.getByRole("heading", {
+        name: "Followers",
+        exact: false
+      })
+    });
 
   await expect(followersCard).toBeVisible();
 
-  const noFollowers = followersCard.getByText("No followers yet.", {exact: true});
+  const noFollowers = followersCard.getByText(
+    "No followers yet.",
+    { exact: true }
+  );
 
-  // Check whether followers are available
-  if (await noFollowers.isVisible()) {
+  const followerList = followersCard.locator("ul li");
+
+  // Check actual UI text
+  const followersText = await followersCard.innerText();
+
+  if (followersText.includes("No followers yet.")) {
+    // No followers condition
     await expect(noFollowers).toBeVisible();
-    console.log("No followers yet.");
+    await expect(followerList).toHaveCount(0);
+
+    console.log("Verified: No followers yet.");
+
   } else {
-    // Assert follower name
-    await expect(followersCard.locator("li")).toContainText(follower);
+    // Followers available condition
+    const followerName = followerList.filter({
+      has: this.page.getByText(follower, { exact: true })
+    });
+
+    await expect(followerName).toBeVisible();
+    await expect(followerName).toContainText(follower);
 
     console.log(`Follower "${follower}" verified successfully`);
   }
 }
+
+
+
 
 
   async statusText(status: string): Promise<void> {
@@ -284,30 +326,56 @@ async followers(follower: string): Promise<void> {
    * @param value - The action to perform: Edit, Reassign, Unfollow, or Delete.
    */
   @step
-  async moreButton(value: string): Promise<void> {
-    await this.page.getByRole("button", { name: "More" }).click();
+ 
+async moreButton(value: string): Promise<void> {
+  const moreButton = this.page.locator('button[aria-label="More Actions"]')
 
-    if (value === "Edit") {
-      await this.page
-        .getByRole("button", { name: "Edit", exact: true })
-        .click();
-    } else if (value === "Reassign") {
-      await this.page
-        .getByRole("button", { name: "Reassign", exact: true })
-        .click();
-    } else if (value === "Unfollow") {
-      await this.page
-        .getByRole("button", { name: "Unfollow", exact: true })
-        .click();
-    } else if (value === "Delete") {
-      await this.page
-        .getByRole("button", { name: "Delete", exact: true })
-        .click();
-    }
+  // Wait and click More button
+  await moreButton.click();
+
+  if (value === "Edit") {
+    const editButton = this.page.locator("#task-action-edit")
+    await editButton.click();
+
+  } else if (value === "Reassign") {
+    const reassignButton = this.page.locator("#task-action-reassign")
+    await reassignButton.click();
+
+  } else if (value === "Unfollow") {
+    const unfollowButton = this.page.getByRole("button", {
+      name: "Unfollow",
+      exact: true
+    });
+
+    await unfollowButton.click();
+
+  } else if (value === "Delete") {
+    const deleteButton = this.page.locator('#task-action-delete')
+
+
+    await deleteButton.click();
+    //delete Task button
+    await this.page.getByRole("button",{name:"Delete task"}).click();
+    //toast message
+    await this.assertTaskDeleted();
+
+  } else {
+    throw new Error(`Invalid More action: ${value}`);
   }
+
+  console.log(`${value} button clicked successfully`);
+}
 
   async deleteTask() {
     await this.moreButton("Delete");
+  }
+
+  async assertTaskDeleted(): Promise<void> {
+  // Locate success toast
+  const successToast = this.page.getByRole("status").filter({hasText: "Task deleted successfully."});
+
+  // Assert toast is visible
+  await expect(successToast).toBeVisible();
   }
 
   async assertTaskToast(title: string,status: string): Promise<void> {
@@ -459,8 +527,6 @@ async attachements(filePaths: string[]): Promise<void> {
   await fileChooser.setFiles(filePaths);
   console.log(`Files selected: ${filePaths.join(", ")}`);
 }
-
-
 
 
 }
