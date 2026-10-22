@@ -11,17 +11,17 @@ test.beforeEach(async ({ page }) => {
 test.describe("CheckList and Attachment @regression @smoke", () => {
 
   test(
-    `Verify task creation and complete task lifecycle:
-     Open → Accepted → In Progress → On Hold →
-     In Progress → Completed → Closed → Draft.
-     Validate task details in Task Reports after each status transition.`,
+    `Verify task checklist and attachment operations with deletion:
+     Create task → Add checklist items → Check items →
+     Uncheck/remove items → Upload attachments →
+     Capture Task ID → Delete task via More options.`,
     async ({ page }) => {
 
       const due = new DueDateMoreTc(page);
 
       await due.createDueDate_MoreOption();
-   
-    })
+    },
+  );
 
 });
 
