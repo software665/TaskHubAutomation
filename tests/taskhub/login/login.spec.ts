@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
     await page.goto(appUrls.loginURL);
 });
 
-test('Login without Forgot Password and Remember Me @positive @regression', async ({ page }) => {
+test('Login without Forgot Password @positive @regression', async ({ page }) => {
     const pm = new PageManagers(page);
 
      const user1 =credentials.super_admin_credentials;

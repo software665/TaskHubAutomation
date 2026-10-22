@@ -1,10 +1,18 @@
 
 import { defineConfig, devices } from '@playwright/test';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load environment values from .env (written by Jenkins, or created locally from .env.example)
+dotenv.config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
 export const appUrls = {
-  baseURL: 'https://taskhub.azcentrix.com:4453',
-  loginURL: '/login',
+  baseURL: process.env.BASE_URL || 'https://taskhub.azcentrix.com:4453',
+  loginURL: process.env.LOGIN_URL || '/login',
 };
+
+// Run headed locally by default; set HEADLESS=true in .env (Jenkins does this) for CI agents
+const headless = process.env.HEADLESS === 'true';
 
 export default defineConfig({
   testDir: './tests',
@@ -37,7 +45,7 @@ export default defineConfig({
 
   use: {
     baseURL: appUrls.baseURL,
-    headless: false,
+    headless,
 
     actionTimeout: 15 * 1000,
     navigationTimeout: 30 * 1000,
@@ -52,9 +60,10 @@ export default defineConfig({
       name: 'chromium',
       use: {
         browserName: 'chromium',
-        viewport: null,
+        // A headless browser has no screen to maximize into, so give it a fixed desktop size
+        viewport: headless ? { width: 1920, height: 1080 } : null,
         launchOptions: {
-          args: ['--start-maximized'],
+          args: headless ? [] : ['--start-maximized'],
         },
       },
     },

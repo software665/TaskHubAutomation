@@ -40,7 +40,7 @@ async createTask(
   dueDateSelector?: string
 ): Promise<void> {
 
-  await this.addTaskButton();
+  await this.createTaskButton();
 
   await this.popupField(title, assignee, priority);
 
@@ -89,7 +89,7 @@ async createTask(
 
 
 
-
+@step
   async moreOptionsDropDown(categoryValue: string, typeValue: string, 
     desValue: string, tagValue: string,assignmentType:string,assignToValue:string){
     //basic information
@@ -205,13 +205,6 @@ async assertTaskID(expectedTaskID: string): Promise<void> {
 }
 
 
-
-  async addTaskButton() {
-    await this.page
-      .getByRole("button", { name: "Create Task", exact: true })
-      .last()
-      .click();
-  }
 
   async popupField(title: string, assignee: string, priority: string) {
     // Task Title
