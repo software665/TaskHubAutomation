@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 
-test.describe("Task Lifecycle Validation @regression @smoke", () => {
+test.describe("CheckList and Attachment @regression @smoke", () => {
 
   test(
     `Verify task creation and complete task lifecycle:

@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 import { LoginPage } from "../page-object/menu-screens/Login";
-import { Tasks } from "../page-object/menu-screens/tasks-screen/Tasks"; 
+import { Tasks } from "../page-object/menu-screens/tasks-screen/Tasks.page"; 
 import { NavigatePages } from "page-object/navigate-page/NavigatePage";
 import { TaskReports } from "page-object/menu-screens/reports-screen/TaskReports";
 import { DatePicker } from "page-object/utils/DatePicker";

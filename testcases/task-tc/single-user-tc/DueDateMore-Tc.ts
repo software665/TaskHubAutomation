@@ -14,14 +14,25 @@ export class DueDateMoreTc {
   }
 
   async createDueDate_MoreOption(): Promise<void> {
-    // Step 1: Login
+
     await this.loginUser1();
-
-    // Step 2: Create Task
     await this.createTask();
+    //add
+    await this.pm.task.addChecklist(dueDate.checklist)
+    //check 
+    await this.pm.task.checkChecklist(dueDate.checklist);
+    //uncheck 
+    await this.pm.task.remove_unChecklist(dueDate.checkListRemove);
+    //attachements
+    await this.pm.task.attachements(dueDate.attachments);
+    const taskID = await this.pm.task.getTaskID();
+    console.log("Created Task ID -", taskID);
 
-    // Step 3: Pause for debugging
-    //await this.page.pause();
+    //delete
+    await this.pm.task.moreButton("Delete");
+
+
+    
   }
 
   async loginUser1(): Promise<void> {
@@ -36,25 +47,20 @@ export class DueDateMoreTc {
     );
   }
 
-  /**
-   * Create Task with Due Date and More Options
-   */
   async createTask(): Promise<void> {
     const task = dueDate.createTask;
 
-    // Get date details only when dueDate is true
+    // Due Date Details
     const dateDetails = task.dueDate
       ? task.dateDetails?.[0]
       : undefined;
 
-    // Validate date details
     if (task.dueDate) {
       if (
-        !dateDetails ||
-        !dateDetails.date ||
-        !dateDetails.hour ||
-        !dateDetails.minute ||
-        !dateDetails.period
+        !dateDetails?.date ||
+        !dateDetails?.hour ||
+        !dateDetails?.minute ||
+        !dateDetails?.period
       ) {
         throw new Error(
           "All dateDetails fields are required when dueDate is true"
@@ -62,9 +68,7 @@ export class DueDateMoreTc {
       }
 
       if (!["AM", "PM"].includes(dateDetails.period)) {
-        throw new Error(
-          "Invalid period. Use AM or PM"
-        );
+        throw new Error("Invalid period. Use AM or PM");
       }
 
       const hour = Number(dateDetails.hour);
@@ -75,9 +79,7 @@ export class DueDateMoreTc {
         hour < 1 ||
         hour > 12
       ) {
-        throw new Error(
-          "Invalid hour. Use a value between 1 and 12"
-        );
+        throw new Error("Hour must be between 1 and 12");
       }
 
       if (
@@ -85,19 +87,53 @@ export class DueDateMoreTc {
         minute < 0 ||
         minute > 59
       ) {
+        throw new Error("Minute must be between 0 and 59");
+      }
+    }
+
+    // More Options Details
+    const basicInfo = task.moreOption
+      ? task.basicInformation
+      : undefined;
+
+    const assignment = task.moreOption
+      ? task.assignment
+      : undefined;
+
+    if (task.moreOption) {
+      if (
+        !basicInfo?.category ||
+        !basicInfo?.type ||
+        !basicInfo?.description ||
+        !basicInfo?.tags ||
+        !assignment?.assignmentType ||
+        !assignment?.assignTo
+      ) {
         throw new Error(
-          "Invalid minute. Use a value between 0 and 59"
+          "All More Options fields are required"
         );
       }
     }
 
-    // Create task
+    // Create Task - Correct Parameter Order
     await this.pm.task.createTask(
       task.title,
       task.assignee,
       task.priority,
       task.moreOption,
       task.dueDate,
+
+      // Basic Information
+      basicInfo?.category,
+      basicInfo?.type,
+      basicInfo?.description,
+      basicInfo?.tags,
+
+      // Assignment
+      assignment?.assignmentType,
+      assignment?.assignTo,
+
+      // Due Date
       dateDetails?.date,
       dateDetails?.hour,
       dateDetails?.minute,
