@@ -3,6 +3,7 @@ import { Page } from "@playwright/test";
 import { PageManagers } from "page-manager/Page-Manager";
 import credentials from "tests/fixture/test-data-management/Login.json";
 import dueDate from "tests/fixture/test-data-management/tasks/DueDateMore.json";
+import { checkList_Add_Assert } from "tests/fixture/Test-Task-Fixture";
 
 export class DueDateMoreTc {
   readonly page: Page;
@@ -18,11 +19,8 @@ export class DueDateMoreTc {
     await this.loginUser1();
     await this.createTask();
     //add
-    await this.pm.task.addChecklist(dueDate.checklist)
-    //check 
-    await this.pm.task.checkChecklist(dueDate.checklist);
-    //uncheck 
-    await this.pm.task.remove_unChecklist(dueDate.checkListRemove);
+    await checkList_Add_Assert(this.page,dueDate)
+  
     //attachements
     await this.pm.task.attachements(dueDate.attachments);
     const taskID = await this.pm.task.getTaskID();

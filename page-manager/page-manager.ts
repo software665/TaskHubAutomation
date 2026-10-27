@@ -12,6 +12,8 @@ export class PageManagers {
     readonly login: LoginPage;
     readonly task : Tasks;
     readonly taskReports :TaskReports;
+
+    //fixture 
  
 
     constructor(page:Page){
@@ -19,6 +21,8 @@ export class PageManagers {
         this.task = new Tasks(page);
         this.navigate = new NavigatePages(page);
         this.taskReports = new TaskReports(page);
+
+      
         
     }
 

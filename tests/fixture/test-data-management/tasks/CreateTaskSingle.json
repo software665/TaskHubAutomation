@@ -17,10 +17,62 @@
         "desValue": "Description Wall Points",
         "days": "29"
     },
-     "reportTask": {
-    "title": "Concurrent work to Wall paint",
+    "reportTask": {
+        "title": "Concurrent work to Wall paint",
+        "status": "Open",
+        "assignee": "Ascent User1",
+        "priority": "High"
+    },
+    "createSubTask": {
+        "title": "Sub Task",
+        "assignee": "Ascent User1",
+        "priority": "High",
+        "dueDate": true,
+        "dateDetails": [
+            {
+                "date": "today",
+                "hour": "10",
+                "minute": "30",
+                "period": "AM"
+            }
+        ],
+        "moreOption": true,
+        "basicInformation": {
+            "category": "General",
+            "type": "Followups",
+            "description": "Moe options",
+            "tags": "test"
+        },
+        "assignment": {
+            "assignmentType": "Individual",
+            "assignTo": "Ascent User1"
+        }
+    },
+      "checklist": [
+    "Check wall condition",
+    "Purchase paint materials",
+    "Clean the wall",
+    "Apply primer",
+    "Complete wall painting"
+  ],
+   "checkListRemove": [
+    "Clean the wall",
+    "Apply primer"
+  ],
+    "attachments": [
+    "tests/fixture/files/Azcentrix_Desk_QA_Test_Report.docx",
+    "tests/fixture/files/40 AI Terms.jpeg"
+  ],
+  "parentListViewAssert":{
+    "title":"Concurrent work to Wall paint",
+    "status":"Open",
+    "priority":"High"   
+  },
+   "childListViewAssert":{
+    "title": "Sub Task",
     "status": "Open",
-    "assignee": "Ascent User1",
-    "priority": "High"
+    "priority": "High",
+    "slaStatus": "On Track"  
   }
+
 }

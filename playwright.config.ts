@@ -7,7 +7,7 @@ import * as path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '.env'), quiet: true });
 
 export const appUrls = {
-  baseURL: process.env.BASE_URL || 'https://taskhub.azcentrix.com:4453',
+  baseURL: process.env.BASE_URL || 'https://taskhub.azcentrix.com',
   loginURL: process.env.LOGIN_URL || '/login',
 };
 
