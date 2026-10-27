@@ -38,7 +38,7 @@ async taskTabFilter(): Promise<void> {
         await this.pm.task.filterBy('Status', task.status);
 
         // Validate list view
-        await this.pm.task.listViewAssert(
+        await this.pm.task.parentListViewAssert(
             task.taskID,
             task.taskName,
             task.status,
@@ -56,7 +56,7 @@ async taskTabFilter(): Promise<void> {
         await this.pm.task.filterBy('Priority', task.priority);
 
         // Validate list view again
-        await this.pm.task.listViewAssert(
+        await this.pm.task.parentListViewAssert(
             task.taskID,
             task.taskName,
             task.status,
@@ -73,7 +73,7 @@ async taskTabFilter(): Promise<void> {
         await this.pm.task.filterBy('Category', task.category);
 
         // Validate list view again
-        await this.pm.task.listViewAssert(
+        await this.pm.task.parentListViewAssert(
             task.taskID,
             task.taskName,
             task.status,
