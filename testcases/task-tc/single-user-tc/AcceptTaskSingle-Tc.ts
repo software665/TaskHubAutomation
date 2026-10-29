@@ -50,7 +50,7 @@ for (const { action, status, data } of taskActions) {
 
 }
 //delete
-  await this.pm.task.moreButton("Delete");
+  await this.pm.task.moreActionButton("Delete");
   }
 
   /**

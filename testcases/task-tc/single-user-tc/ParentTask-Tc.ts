@@ -1,39 +1,58 @@
 
 import { Page } from "@playwright/test";
 import { PageManagers } from "page-manager/Page-Manager";
-import credentials from "tests/fixture/test-data-management/Login.json";
-import dueDate from "tests/fixture/test-data-management/tasks/DueDateMore.json";
-import { checkList_Add_Assert } from "tests/fixture/Test-Task-Fixture";
 
-export class DueDateMoreTc {
+import credentials from "tests/fixture/test-data-management/Login.json";
+import parentTs from "tests/fixture/test-data-management/tasks/ParentTask.json";
+
+import {
+  checkList_Add_Assert,
+} from "tests/fixture/Test-Task-Fixture";
+
+export class ParentTaskTC {
+
   readonly page: Page;
-  private pm: PageManagers;
+  private readonly pm: PageManagers;
 
   constructor(page: Page) {
     this.page = page;
     this.pm = new PageManagers(page);
   }
 
-  async createDueDate_MoreOption(): Promise<void> {
+  /**
+   * Complete Parent Task Test Flow
+   *
+   * Login -> Create Task -> Checklist
+   * -> Attachments -> Capture Task ID -> Delete Task
+   */
+  async createParentTask(): Promise<void> {
 
+    // Step 1: Login
     await this.loginUser1();
+
+    // Step 2: Create Parent Task
     await this.createTask();
-    //add
-    await checkList_Add_Assert(this.page,dueDate)
-  
-    //attachements
-    await this.pm.task.attachements(dueDate.attachments);
-    const taskID = await this.pm.task.getTaskID();
-    console.log("Created Task ID -", taskID);
 
-    //delete
-    await this.pm.task.moreButton("Delete");
+    // Step 3: Add and Validate Checklist
+    await this.validateChecklist();
 
+    // Step 4: Upload Attachments
+    await this.uploadAttachments();
 
-    
+    // Step 5: Capture Created Task ID
+    const taskID = await this.getCreatedTaskID();
+
+    // Step 6: Delete Parent Task
+    await this.deleteTask();
+
+    console.log("Parent Task Test Completed:", taskID);
   }
 
+  /**
+   * Login User
+   */
   async loginUser1(): Promise<void> {
+
     const user1 = credentials.userone_credentials;
 
     await this.pm.login.loginPage(
@@ -45,8 +64,12 @@ export class DueDateMoreTc {
     );
   }
 
+  /**
+   * Create Parent Task with Due Date and More Options
+   */
   async createTask(): Promise<void> {
-    const task = dueDate.createTask;
+
+    const task = parentTs.createTask;
 
     // Due Date Details
     const dateDetails = task.dueDate
@@ -54,6 +77,7 @@ export class DueDateMoreTc {
       : undefined;
 
     if (task.dueDate) {
+
       if (
         !dateDetails?.date ||
         !dateDetails?.hour ||
@@ -99,6 +123,7 @@ export class DueDateMoreTc {
       : undefined;
 
     if (task.moreOption) {
+
       if (
         !basicInfo?.category ||
         !basicInfo?.type ||
@@ -113,7 +138,7 @@ export class DueDateMoreTc {
       }
     }
 
-    // Create Task - Correct Parameter Order
+    // Create Task - Preserve Existing Parameter Order
     await this.pm.task.createTask(
       task.title,
       task.assignee,
@@ -139,6 +164,53 @@ export class DueDateMoreTc {
       "#quick-due"
     );
 
-    console.log("Task created successfully");
+    console.log("Parent Task Created Successfully");
+  }
+
+  /**
+   * Reusable Method - Checklist Operations
+   */
+  async validateChecklist(): Promise<void> {
+
+    await checkList_Add_Assert(
+      this.page,
+      parentTs
+    );
+
+    console.log("Checklist Operations Completed");
+  }
+
+  /**
+   * Reusable Method - Upload Attachments
+   */
+  async uploadAttachments(): Promise<void> {
+
+    await this.pm.task.attachements(
+      parentTs.attachments
+    );
+
+    console.log("Attachments Uploaded Successfully");
+  }
+
+  /**
+   * Reusable Method - Capture Generated Task ID
+   */
+  async getCreatedTaskID(): Promise<string> {
+
+    const taskID = await this.pm.task.getTaskID();
+
+    console.log("Created Parent Task ID:", taskID);
+
+    return taskID;
+  }
+
+  /**
+   * Reusable Method - Delete Current Parent Task
+   */
+  async deleteTask(): Promise<void> {
+
+    await this.pm.task.moreActionButton("Delete");
+
+    console.log("Parent Task Delete Action Completed");
   }
 }

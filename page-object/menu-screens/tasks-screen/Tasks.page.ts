@@ -13,8 +13,44 @@ export class Tasks extends EditTask {
 
 
   @step
-  async clickTaskID(taskID: string): Promise<void> {
-  await this.page.getByText(taskID, { exact: true }).click();
+async clickTaskID(taskID: string): Promise<void> {
+
+  // Locate parent task using Task ID
+  const parentRow = this.page.locator('tbody tr:not([aria-label^="Sub-task of"])').filter({
+      has: this.page.locator('td:first-child span', {
+        hasText: taskID
+      })
+    });
+
+  // Check if Parent Task ID is present
+  if (await parentRow.count() > 0) {
+
+    await expect(parentRow).toBeVisible();
+
+    await parentRow.locator('td:first-child span').getByText(taskID, { exact: true }).click();
+
+    return;
+  }
+
+  // Locate Sub Task using Task ID
+  const childRow = this.page.locator('tbody tr[aria-label^="Sub-task of"]').filter({
+      has: this.page.locator('td:first-child span', {
+        hasText: taskID
+      })
+    });
+
+  // Check if Sub Task ID is present
+  if (await childRow.count() > 0) {
+
+    await expect(childRow).toBeVisible();
+
+    await childRow.locator('td:first-child span').getByText(taskID, { exact: true })
+      .click();
+
+    return;
+  }
+
+  throw new Error(`Task ID ${taskID} not found in Parent or Sub Task list`);
 }
 
   /**
@@ -440,7 +476,7 @@ export class Tasks extends EditTask {
    * @param value - The action to perform: Edit, Reassign, Unfollow, or Delete.
    */
   @step
-  async moreButton(value: string): Promise<void> {
+  async moreActionButton(value: string): Promise<void> {
     const moreButton = this.page.locator('button[aria-label="More Actions"]');
 
     // Wait and click More button
@@ -485,7 +521,7 @@ export class Tasks extends EditTask {
   }
   @step
   async deleteTask() {
-    await this.moreButton("Delete");
+    await this.moreActionButton("Delete");
   }
   @step
   async assertTaskDeleted(): Promise<void> {
@@ -549,7 +585,7 @@ export class Tasks extends EditTask {
     desValue: string,
     days: string,
   ): Promise<void> {
-    await this.moreButton("Edit");
+    await this.moreActionButton("Edit");
     //edit page fill
     await this.editTaskScreen(title, categoryValue, typeValue, desValue, days);
   }
@@ -614,28 +650,36 @@ export class Tasks extends EditTask {
   }
 
   @step
-  async parentListViewAssert(
-    taskID: string,
-    taskName: string,
-    status: string,
-    priority: string,
-  ): Promise<void> {
-    // Find the task card using Task ID
-    const taskCard = this.page.locator('[role="listitem"]').filter({ hasText: taskID });
+async parentListViewAssert(
+  taskID: string,
+  taskName: string,
+  status: string,
+  priority: string,
+): Promise<void> {
 
-    await expect(taskCard).toBeVisible();
-    // Validate Task ID
-    await expect(taskCard.locator("p").filter({ hasText: taskID })).toHaveText(taskID);
-    // Validate Task Name
-    await expect(taskCard.locator('[data-list-card-title="true"]')).toHaveText(taskName,{ useInnerText: true });
-    // Validate Status
-    await expect(taskCard.locator('dt[title="Status"] + dd')).toHaveText(status);
-    // Validate Priority
-    await expect(taskCard.locator('dt[title="Priority"] + dd')).toHaveText(priority);
-  }
+  // Locate parent task row using Task ID
+  const taskRow = this.page.locator('tr').filter({has: this.page.locator('td:first-child span', {
+        hasText: taskID})});
+
+  // Validate task row visibility
+  await expect(taskRow).toBeVisible();
+
+  // Validate Task ID
+  await expect(taskRow.locator('td:nth-child(1) span').last()).toHaveText(taskID);
+
+  // Validate Task Name
+  await expect(taskRow.locator('td:nth-child(2) span[title]')).toHaveText(taskName);
+
+  // Validate Status
+  await expect(taskRow.locator('td:nth-child(3)')).toContainText(status);
+
+  // Validate Priority
+  await expect(taskRow.locator('td:nth-child(4)')).toContainText(priority);
+
+}
 
   @step
-  async childTaskAssert(
+async childTaskAssert(
   parentTaskID: string,
   childTaskID: string,
   childTaskName: string,
@@ -644,8 +688,9 @@ export class Tasks extends EditTask {
   slaStatus: string
 ): Promise<void> {
 
-  // Locate parent task using dynamic Task ID
-  const parentRow = this.page.locator('tbody tr:not([aria-label^="Sub-task of"])').filter({ has: this.page.getByText(parentTaskID, { exact: true })});
+  // Locate parent task using Parent Task ID
+  const parentRow = this.page.locator('tbody tr:not([aria-label^="Sub-task of"])') .filter({has: this.page.getByText(parentTaskID, { exact: true })
+    });
 
   await expect(parentRow).toBeVisible();
 
@@ -656,28 +701,31 @@ export class Tasks extends EditTask {
     await expandButton.click();
   }
 
-  // Locate child task using dynamic Parent ID and Child ID
-  const childRow = this.page.locator('tbody tr[aria-label^="Sub-task of"]').filter({has: this.page.getByText(childTaskID, { exact: true })});
+  // Locate child task using Parent Task ID and Child Task ID
+  const childRow = this.page.locator(`tbody tr[aria-label="Sub-task of ${parentTaskID}"]`)
+  .filter({has: this.page.getByText(childTaskID, { exact: true })
+    });
 
+  // Validate child row visibility
   await expect(childRow).toBeVisible();
 
   // Validate parent-child relationship
   await expect(childRow).toHaveAttribute('aria-label',`Sub-task of ${parentTaskID}`);
 
   // Validate Child Task ID
-  await expect(childRow.getByText(childTaskID, { exact: true })).toBeVisible();
+  await expect(childRow.locator('td:nth-child(1) span').last()).toHaveText(childTaskID);
 
   // Validate Child Task Name
-  await expect(childRow.locator('span[title]')).toHaveText(childTaskName);
+  await expect(childRow.locator('td:nth-child(2) span[title]')).toHaveText(childTaskName);
 
-  // Validate Status using badge class
-  await expect(childRow.locator('span.bg-status-info-bg')).toHaveText(status);
+  // Validate Status
+  await expect(childRow.locator('td:nth-child(3)')).toContainText(status);
 
-  // Validate Priority using class
-  await expect(childRow.locator('span.text-secondary').filter({hasText: priority})).toHaveText(priority);
+  // Validate Priority
+  await expect(childRow.locator('td:nth-child(4)')).toContainText(priority);
 
-  // Validate SLA Status using badge class
-  await expect(childRow.locator('span.bg-status-success-bg')).toHaveText(slaStatus);
+  // Validate SLA Status
+  await expect(childRow.locator('td:nth-child(7)')).toContainText(slaStatus);
 }
 
 
@@ -705,4 +753,47 @@ export class Tasks extends EditTask {
     await fileChooser.setFiles(filePaths);
     console.log(`Files selected: ${filePaths.join(", ")}`);
   }
+
+  
+async addDependency(taskID: string): Promise<void> {
+
+  // Step 1: Locate Dependencies section
+  const dependencySection = this.page
+    .locator("section")
+    .filter({
+      has: this.page.getByRole("heading", {
+        name: "Dependencies",
+        exact: true
+      })
+    });
+
+  await expect(dependencySection).toBeVisible();
+
+  // Step 2: Click Add Dependency button
+  await dependencySection
+    .getByRole("button", {
+      name: "Add Dependency"
+    })
+    .click();
+
+  // Step 3: Search Dependency Task ID
+  const searchInput = this.page.getByRole("searchbox", {name: "Search tasks to depend on"});
+
+  await expect(searchInput).toBeVisible();
+  await searchInput.fill(taskID);
+
+  // Step 4: Locate Task ID in search results
+  const dependencyRow = this.page.locator("ul li").filter({has: this.page.getByText(taskID, {exact: true})});
+
+  // Step 5: Assert Task ID is visible
+  await expect(dependencyRow).toBeVisible();
+
+  await expect(dependencyRow.locator("span.font-mono")).toHaveText(taskID);
+
+  // Step 6: Click Add button for matching Task ID
+  await dependencyRow.getByRole("button", {name: "Add",exact: true}).click();
+
+  console.log(`Dependency added: ${taskID}`);
+}
+
 }
