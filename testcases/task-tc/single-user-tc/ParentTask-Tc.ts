@@ -7,7 +7,7 @@ import parentTs from "tests/fixture/test-data-management/tasks/ParentTask.json";
 
 import {
   checkList_Add_Assert,
-} from "tests/fixture/Test-Task-Fixture";
+} from "tests/fixture/test-data-management/utils/Test-Task-Fixture";
 
 export class ParentTaskTC {
 
@@ -41,6 +41,9 @@ export class ParentTaskTC {
 
     // Step 5: Capture Created Task ID
     const taskID = await this.getCreatedTaskID();
+
+    //dependencies 
+    await this.pm.task.addDependency(parentTs.dependency.taskID);
 
     // Step 6: Delete Parent Task
     await this.deleteTask();

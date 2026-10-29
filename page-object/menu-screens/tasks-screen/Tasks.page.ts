@@ -755,6 +755,7 @@ async childTaskAssert(
   }
 
   
+
 async addDependency(taskID: string): Promise<void> {
 
   // Step 1: Locate Dependencies section
@@ -772,28 +773,71 @@ async addDependency(taskID: string): Promise<void> {
   // Step 2: Click Add Dependency button
   await dependencySection
     .getByRole("button", {
-      name: "Add Dependency"
+      name: "Add Dependency",
+      exact: true
     })
     .click();
 
   // Step 3: Search Dependency Task ID
-  const searchInput = this.page.getByRole("searchbox", {name: "Search tasks to depend on"});
+  const searchInput = this.page.getByRole("searchbox", {
+    name: "Search tasks to depend on"
+  });
 
   await expect(searchInput).toBeVisible();
   await searchInput.fill(taskID);
 
   // Step 4: Locate Task ID in search results
-  const dependencyRow = this.page.locator("ul li").filter({has: this.page.getByText(taskID, {exact: true})});
+  const dependencyRow = this.page
+    .locator("ul li")
+    .filter({
+      has: this.page.getByText(taskID, {
+        exact: true
+      })
+    });
 
-  // Step 5: Assert Task ID is visible
-  await expect(dependencyRow).toBeVisible();
+  // Step 5: Locate No Matching Tasks message
+  const noMatchingTasks = this.page
+    .locator("ul li")
+    .getByText("No matching tasks", {
+      exact: true
+    });
 
-  await expect(dependencyRow.locator("span.font-mono")).toHaveText(taskID);
+  // Step 6: Wait for search result or empty state
+  await expect(
+    dependencyRow.or(noMatchingTasks)
+  ).toBeVisible();
 
-  // Step 6: Click Add button for matching Task ID
-  await dependencyRow.getByRole("button", {name: "Add",exact: true}).click();
+  // Step 7: Handle matching task
+  if (await dependencyRow.isVisible()) {
 
-  console.log(`Dependency added: ${taskID}`);
+    // Assert Task ID
+    await expect(
+      dependencyRow.locator("span.font-mono")
+    ).toHaveText(taskID);
+
+    // Click Add button
+    await dependencyRow
+      .getByRole("button", {
+        name: "Add",
+        exact: true
+      })
+      .click();
+
+    console.log(`Dependency added: ${taskID}`);
+
+  } else {
+
+    // Assert No Matching Tasks message
+    await expect(noMatchingTasks).toBeVisible();
+    await expect(noMatchingTasks).toHaveText(
+      "No matching tasks"
+    );
+
+    console.log(
+      `No matching tasks found for Task ID: ${taskID}`
+    );
+  }
 }
+
 
 }

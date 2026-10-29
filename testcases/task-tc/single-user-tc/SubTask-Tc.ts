@@ -7,8 +7,7 @@ import subTask from "tests/fixture/test-data-management/tasks/SubTask.json";
 
 import {
   checkList_Add_Assert,
-  getSubTaskIDAssert,
-} from "tests/fixture/Test-Task-Fixture";
+  getSubTaskIDAssert } from "tests/fixture/test-data-management/utils/Test-Task-Fixture";
 
 export class SubTaskTC {
   readonly page: Page;
